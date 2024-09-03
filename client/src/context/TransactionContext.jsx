@@ -243,6 +243,7 @@ export const TransactionProvider = ({ children }) => {
             }
             const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
             setCurrentAccount(accounts[0]);
+            window.location.reload()
         } catch (error) {
             console.log(error);
             throw new Error("No Ethereum object present");
@@ -287,6 +288,28 @@ export const TransactionProvider = ({ children }) => {
     useEffect(() => {
         checkIfWalletIsConnected();
         checkIfTransactionsExist();
+
+        if (typeof window.ethereum !== "undefined") {
+            window.ethereum.on("accountsChanged", () => {
+                window.location.reload();
+            });
+
+            window.ethereum.on("disconnect", () => {
+                window.location.reload();
+            });
+        }
+        return () => {
+            if (typeof window.ethereum !== "undefined") {
+                window.ethereum.removeListener("accountsChanged", () => {
+                    window.location.reload();
+                });
+
+                window.ethereum.removeListener("disconnect", () => {
+                    window.location.reload();
+                });
+            }
+        };
+
     }, []);
 
     return (
